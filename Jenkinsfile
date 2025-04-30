@@ -4,8 +4,8 @@ pipeline {
     environment {
         // Define environment variables
         DOCKER_HUB_CREDS = credentials('docker-hub-credentials')
-        DOCKER_IMAGE_NAME_SERVER = "your-docker-hub-username/mern-server"
-        DOCKER_IMAGE_NAME_CLIENT = "your-docker-hub-username/mern-client"
+        DOCKER_IMAGE_NAME_SERVER = "sahil2619/mern-server"
+        DOCKER_IMAGE_NAME_CLIENT = "sahil2619/mern-client"
     }
     
     stages {
@@ -20,8 +20,8 @@ pipeline {
             steps {
                 dir('server') {
                     // Install dependencies and run tests
-                    sh 'npm install'
-                    sh 'npm test'
+                    bat 'npm install'
+                    bat 'npm test'
                 }
             }
         }
@@ -30,8 +30,8 @@ pipeline {
             steps {
                 dir('client') {
                     // Install dependencies and run tests
-                    sh 'npm install'
-                    sh 'npm test -- --watchAll=false'
+                    bat 'npm install'
+                    bat 'npm test -- --watchAll=false'
                 }
             }
         }
@@ -39,22 +39,22 @@ pipeline {
         stage('Build Images') {
             steps {
                 // Build Docker images
-                sh 'docker-compose build'
+                bat 'docker-compose build'
             }
         }
         
         stage('Push Images to DockerHub') {
             steps {
                 // Login to Docker Hub
-                sh 'echo $DOCKER_HUB_CREDS_PSW | docker login -u $DOCKER_HUB_CREDS_USR --password-stdin'
+                bat 'echo %DOCKER_HUB_CREDS_PSW%| docker login -u %DOCKER_HUB_CREDS_USR% --password-stdin'
                 
                 // Tag and push the server image
-                sh "docker tag mern-server:latest $DOCKER_IMAGE_NAME_SERVER:latest"
-                sh "docker push $DOCKER_IMAGE_NAME_SERVER:latest"
+                bat "docker tag mern-server:latest %DOCKER_IMAGE_NAME_SERVER%:latest"
+                bat "docker push %DOCKER_IMAGE_NAME_SERVER%:latest"
                 
                 // Tag and push the client image
-                sh "docker tag mern-client:latest $DOCKER_IMAGE_NAME_CLIENT:latest"
-                sh "docker push $DOCKER_IMAGE_NAME_CLIENT:latest"
+                bat "docker tag mern-client:latest %DOCKER_IMAGE_NAME_CLIENT%:latest"
+                bat "docker push %DOCKER_IMAGE_NAME_CLIENT%:latest"
             }
         }
         
@@ -63,8 +63,8 @@ pipeline {
                 // Deploy the application
                 // This could be deploying to a server, Kubernetes, etc.
                 // For simplicity, we'll just restart our local containers
-                sh 'docker-compose down || true'
-                sh 'docker-compose up -d'
+                bat 'docker-compose down || exit 0'
+                bat 'docker-compose up -d'
             }
         }
     }
@@ -72,8 +72,8 @@ pipeline {
     post {
         always {
             // Clean up
-            sh 'docker-compose down || true'
-            sh 'docker logout'
+            bat 'docker-compose down || exit 0'
+            bat 'docker logout'
         }
         success {
             echo 'Pipeline completed successfully!'
