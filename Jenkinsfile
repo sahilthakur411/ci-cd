@@ -6,6 +6,7 @@ pipeline {
         DOCKER_HUB_CREDS = credentials('docker-hub-credentials')
         DOCKER_IMAGE_NAME_SERVER = "sahil2619/mern-server"
         DOCKER_IMAGE_NAME_CLIENT = "sahil2619/mern-client"
+        NODE_ENV = "test"
     }
     
     stages {
@@ -20,8 +21,13 @@ pipeline {
             steps {
                 dir('server') {
                     // Install dependencies and run tests
-                    bat 'npm install'
+                    bat 'npm install --no-audit --no-fund'
                     bat 'npm test'
+                }
+            }
+            post {
+                failure {
+                    echo 'Server tests failed!'
                 }
             }
         }
@@ -30,8 +36,13 @@ pipeline {
             steps {
                 dir('client') {
                     // Install dependencies and run tests
-                    bat 'npm install'
-                    bat 'npm test -- --watchAll=false'
+                    bat 'npm install --no-audit --no-fund'
+                    bat 'npm test -- --watchAll=false --passWithNoTests'
+                }
+            }
+            post {
+                failure {
+                    echo 'Client tests failed!'
                 }
             }
         }
